@@ -30,5 +30,5 @@ print 'generating...'
 frame = 0
 for input_i, input_j in generate_input():
     img = model.draw_grid(run_fn(input_i, input_j))
-    img.save('font_%06d.png' % frame)
+    img.show()
     frame += 1

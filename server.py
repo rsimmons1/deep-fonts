@@ -1,5 +1,5 @@
 import os
-import flask
+from flask import Flask, request, render_template
 import model
 import numpy
 import PIL, PIL.Image, PIL.PngImagePlugin
@@ -12,10 +12,10 @@ model = model.Model(artificial_font=True)
 model.try_load()
 run_fn = model.get_run_fn()
 
-app = flask.Flask('fonts')
+app = Flask('fonts')
 
 env = jinja2.Environment(loader=jinja2.FileSystemLoader('static'))
-    
+
 @app.route('/')
 def root():
     template = env.get_template('index.html')
@@ -39,9 +39,29 @@ def font():
     img.save(s, format='PNG')
     return flask.Response(response=s.getvalue(), mimetype='image/png')
 
+@app.route('/draw')
+def draw_route():
+    template = env.get_template('draw.html')
+    return template.render(d=model.d)
+
+@app.route('/create_font',methods=['POST'])
+def create_font():
+    import re
+    import base64
+    dataUrlPattern = re.compile('data:image/(png|jpeg);base64,(.*)$')
+    img_data = request.form['img']
+    print img_data
+    imgb64 = dataUrlPattern.match(img_data).group(2)
+    print imgb64
+    if imgb64 is not None and len(imgb64) > 0:
+        with open("test_img.png","wb") as test_img:
+            test_img.write(base64.decodestring(imgb64))
+        return 'YAYYY'
+    else:
+        return 'NOOOO'
 
 def main():
-    app.run(host='0.0.0.0', debug=False)
+    app.run(host='0.0.0.0', debug=True)
 
 if __name__ == '__main__':
     main()
